@@ -1,0 +1,60 @@
+name: w-dgrl
+# -----------------------------------------------------------------------
+# Adapted from environment.yml for local hardware:
+#   GPU  : NVIDIA RTX 2070 Super  (sm_75, 8 GB)  —  driver 580, max CUDA 13.0
+#   CUDA : toolkit 12.3 installed  →  cu121 builds are forward-compatible
+#   RAM  : 32 GB  |  CPU : 4 cores
+#
+# Channel strategy: use only pytorch + dglteam + nvidia (no conda-forge / defaults).
+# Mixing conda-forge with pytorch channel causes the classic SAT solver to OOM.
+# All scientific stack packages (numpy, scipy, etc.) are pulled in as PyTorch deps.
+# -----------------------------------------------------------------------
+channels:
+  - pytorch
+  - dglteam/label/th22_cu121
+  - nvidia
+
+dependencies:
+  # ── Python ──────────────────────────────────────────────────────────
+  - python=3.12
+
+  # ── PyTorch (CUDA 12.1 wheels run fine on the installed 12.3 toolkit)
+  - pytorch=2.2.1=py3.12_cuda12.1_cudnn8.9.2_0
+  - pytorch-cuda=12.1
+  - torchvision=0.17.1=py312_cu121
+  - torchaudio=2.2.1=py312_cu121
+
+  # ── DGL for torch 2.2 + cu121 ───────────────────────────────────────
+  - dgl=2.3.0.th22.cu121=py312_0
+
+  # ── Core scientific stack (come in as PyTorch deps; pin for safety) ──
+  - numpy=1.26.4
+  - scipy
+  - pandas
+  - scikit-learn
+  - networkx
+  - matplotlib
+  - tqdm
+  - pyyaml
+  - requests
+  - psutil
+  - pillow
+  - typing_extensions
+
+  # ── pip packages ─────────────────────────────────────────────────────
+  - pip
+  - pip:
+      # PyG sparse extensions compiled for torch 2.2.1 + cu121
+      - --find-links https://data.pyg.org/whl/torch-2.2.1+cu121.html
+      - torch-scatter==2.1.2
+      - torch-sparse==0.6.18
+
+      # OR-Tools scheduler / baseline solver
+      - ortools==9.10.4067
+
+      # Misc utilities
+      - pynvml==11.5.3
+      - cloudpickle==1.6.0
+      - future==1.0.0
+      - fsspec==2024.6.0
+      - packaging

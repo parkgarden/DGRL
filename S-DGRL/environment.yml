@@ -1,0 +1,15 @@
+name: dgrl-s
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8
+  - numpy=1.24.1
+  - pandas=2.0.3
+  - openpyxl=3.1.5
+  - matplotlib=3.7.3
+  - nvidia-ml-py=12.560.30
+  - pip:
+      - torch==2.4.1+cu121 --index-url https://download.pytorch.org/whl/cu121
+      - torch-scatter==2.1.2+pt24cu121 --find-links https://data.pyg.org/whl/torch-2.4.1+cu121.html
+      - gym==0.18.3
