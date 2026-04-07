@@ -415,16 +415,9 @@ class FJSPEnvForDynGraphBA:
         self.deleted_op_nodes = \
             np.logical_and((self.op_ct <= self.next_schedule_time[:, np.newaxis]),
                            self.op_scheduled_flag)
-        # self.delete_mask_fea_j = np.tile(self.deleted_op_nodes[:, :, np.newaxis],
-        #                                 (1, 1, self.op_fea_dim))
 
         if dyn_ver != 0:
             activate_future_op_node = np.minimum(chosen_op + self.activate_num_op, self.job_last_op_id[self.env_idxs, chosen_job])
-
-            # self.deleted_future_op_nodes[self.env_idxs, activate_future_op_node] = 0 
-            # self.total_deleted_op_nodes = np.logical_or(self.deleted_op_nodes, self.deleted_future_op_nodes) 
-            # self.delete_mask_fea_j = np.tile(self.total_deleted_op_nodes[:, :, np.newaxis],
-            #                                 (1, 1, self.op_fea_dim))
             
             if dyn_ver != 14:
                 invalid_job_mask = torch.tensor(self.candidate_process_relation).all(dim=2) #shape torch.Size([num_enviroments, num_jobs])
@@ -542,11 +535,6 @@ class FJSPEnvForDynGraphBA:
 
         return self.state, np.array(reward), self.done()
     
-    # def multi_step(self,dyn_ver, actions):
-    #     # breakpoint()
-    #     for a in range(actions.size):
-    #         state, reward, done = self.step(dyn_ver, np.array([actions[0,a]]))
-    #     return state, reward, done
 
     def multi_step2(self,dyn_ver, actions):
         for a in range(actions.size):
@@ -555,7 +543,6 @@ class FJSPEnvForDynGraphBA:
             chosen_mch = action % self.number_of_machines
             chosen_op = self.candidate[self.env_idxs, chosen_job]
 
-            # if chosen_op == 1149 and chosen_job == 56 and chosen_mch == 9:
 
             if (self.reverse_process_relation[self.env_idxs, chosen_op, chosen_mch]).any():
                 print(
@@ -626,10 +613,6 @@ class FJSPEnvForDynGraphBA:
             else:
                 activate_future_op_node = np.minimum(chosen_op + self.activate_num_op, self.job_last_op_id[self.env_idxs, chosen_job])
 
-                # self.deleted_future_op_nodes[self.env_idxs, activate_future_op_node] = 0 
-                # self.total_deleted_op_nodes = np.logical_or(self.deleted_op_nodes, self.deleted_future_op_nodes) 
-                # self.delete_mask_fea_j = np.tile(self.total_deleted_op_nodes[:, :, np.newaxis],
-                #                                 (1, 1, self.op_fea_dim))
                 
                 if dyn_ver != 14:
                     invalid_job_mask = torch.tensor(self.candidate_process_relation).all(dim=2) #shape torch.Size([num_enviroments, num_jobs])
@@ -757,19 +740,6 @@ class FJSPEnvForDynGraphBA:
         chosen_mch2 = actions % self.number_of_machines
         chosen_op2 = self.candidate[self.env_idxs, chosen_job2]
 
-        # if chosen_job == 18:
-
-        # if chosen_op == 1149 and chosen_job == 56 and chosen_mch == 9:
-
-        # if (self.reverse_process_relation[self.env_idxs, chosen_op, chosen_mch]).any():
-        #     print(
-        #         f'FJSP_Env.py Error from choosing action: Op {chosen_op} can\'t be processed by Mch {chosen_mch}')
-        #     sys.exit()
-        # if (self.total_deleted_op_nodes[self.env_idxs, chosen_op]).any():
-        #     print(
-        #         f'FJSP_Env.py Error from choosing action: Op {chosen_op} is not available')
-        #     sys.exit()
-
         self.step_count += actions.size
 
         candidate_add_flag = (chosen_op2 != self.job_last_op_id[self.env_idxs, chosen_job2])
@@ -877,53 +847,15 @@ class FJSPEnvForDynGraphBA:
         mask1 = (self.op_idx >= chosen_op2[:,:,None]) & (self.op_idx < (self.job_last_op_id[self.env_idxs, chosen_job2] + 1)[:,:, None])
         self.op_ct_lb[self.env_idxs] += (diff[:, :, None]* mask1).sum(axis=1)
 
-        # mask2 = (self.op_idx[None, :] >= self.job_first_op_id[self.env_idxs, chosen_job2][:, :, None]) & (self.op_idx[None, :] < self.job_last_op_id[self.env_idxs, chosen_job2][:, :, None])
-        # # self.op_match_job_left_op_nums[self.env_idxs] -= mask2.sum(axis=1).astype(int)
-        # # self.op_match_job_remain_work[self.env_idxs] -= (self.op_mean_pt[self.env_idxs, chosen_op2][:,:,None] * mask2).sum(axis=1)
-
-        # masks_seq = []
-        # for a in range(actions.size):
-        #     # pruned_op_mask = self.update_op_mask(dyn_ver)
-        #     op = np.array([chosen_op2[0,a]])
-        #     job = np.array([chosen_job2[0,a]])
-
-        #     """
-        #     not same
-        #     """
-        #     mask3 = (self.op_idx >= (self.job_first_op_id[self.env_idxs, job])[:,
-        #                             np.newaxis]) & \
-        #             (self.op_idx < (self.job_last_op_id[self.env_idxs, job] + 1)[:,
-        #                         np.newaxis])
-        #     mask4 = (self.op_idx >= self.job_first_op_id[self.env_idxs, job][:, None]) & (self.op_idx < (self.job_last_op_id[self.env_idxs, job] + 1)[:, None])
-        #     masks_seq.append(mask4.astype(int))
-
-        #     self.op_match_job_left_op_nums[mask3] -= 1
-        #     # self.op_match_job_left_op_nums[mask2[:,a]] -= 1
-        #     # self.op_match_job_left_op_nums[self.env_idxs] -= mask2.sum(axis=1).astype(int)
-        #     # self.op_match_job_remain_work[mask2] -= \
-        #     #     np.tile(self.op_mean_pt[self.env_idxs, op][:, np.newaxis], (1, self.number_of_ops))[mask2]
-        #     # self.op_match_job_remain_work[mask2[:,a]] -= \
-        #     #     np.tile(self.op_mean_pt[self.env_idxs, op][:, np.newaxis], (1, self.number_of_ops))[mask2[:,a]]
-        #     self.op_match_job_remain_work[mask3] -= \
-        #         np.tile(self.op_mean_pt[self.env_idxs, op][:, np.newaxis], (1, self.number_of_ops))[mask3]
-
-        # masks_seq = np.stack(masks_seq, axis=1)
-
         starts = self.job_first_op_id[self.env_idxs[:, None], chosen_job2]
         ends   = (self.job_last_op_id[self.env_idxs[:, None], chosen_job2] + 1)
 
         mask4 = (self.op_idx[None, :] >= starts[:, :, None]) & (self.op_idx[None, :] < ends[:, :, None])
 
-        # # mask2 = (self.op_idx >= (self.job_first_op_id[self.env_idxs, chosen_job])[:,
-        # #                         np.newaxis]) & \
-        # #         (self.op_idx < (self.true_job_last_op_id[self.env_idxs, chosen_job] + 1)[:,
-        # #                        np.newaxis])
-        # mask3 = (self.op_idx[None, :] >= self.job_first_op_id[self.env_idxs, chosen_job2][:, :, None]) & (self.op_idx[None, :] < self.job_last_op_id[self.env_idxs, chosen_job2][:, :, None])
+
         self.op_match_job_left_op_nums[self.env_idxs] -= mask4.sum(axis=1).astype(int)
-        # # self.op_match_job_left_op_nums[mask2] -= 1
         self.op_match_job_remain_work[self.env_idxs] -= (self.op_mean_pt[self.env_idxs, chosen_op2][:,:,None] * mask4).sum(axis=1)
-        # # self.op_match_job_remain_work[mask2] -= \
-        # #     np.tile(self.op_mean_pt[self.env_idxs, chosen_op][:, np.newaxis], (1, self.number_of_ops))[mask2]
+
 
         
         self.op_waiting_time = np.zeros((self.number_of_envs, self.number_of_ops))
@@ -953,9 +885,7 @@ class FJSPEnvForDynGraphBA:
         self.mch_current_available_jc_nums = np.sum(~self.dynamic_pair_mask, axis=1)
         self.mch_current_available_op_nums -= self.process_relation[
             self.env_idxs, chosen_op2].sum(axis=1)
-        
-        # self.mch_current_available_op_nums -= self.process_relation[
-        #     self.env_idxs, chosen_op]
+
 
         mch_free_duration = np.expand_dims(self.next_schedule_time, axis=1) - self.mch_free_time
         mch_free_flag = mch_free_duration < 0
@@ -987,275 +917,6 @@ class FJSPEnvForDynGraphBA:
         self.state.update(self.fea_j, pruned_op_mask, self.fea_m, self.mch_mask,
                         self.dynamic_pair_mask, self.comp_idx, self.candidate,
                         fea_pairs)
-        # candidate_add_flag = (chosen_op != self.job_last_op_id[self.env_idxs, chosen_job])
-        # self.candidate[self.env_idxs, chosen_job] += candidate_add_flag
-        # self.mask[self.env_idxs, chosen_job] = (1 - candidate_add_flag)
-
-        # # the start processing time of chosen operations
-        # chosen_op_st = np.maximum(self.candidate_free_time[self.env_idxs, chosen_job],
-        #                           self.mch_free_time[self.env_idxs, chosen_mch])
-
-        # self.op_ct[self.env_idxs, chosen_op] = chosen_op_st + self.op_pt[
-        #     self.env_idxs, chosen_op, chosen_mch]
-        # self.candidate_free_time[self.env_idxs, chosen_job] = self.op_ct[self.env_idxs, chosen_op]
-        # # breakpoint()
-        # self.mch_free_time[self.env_idxs, chosen_mch] = self.op_ct[self.env_idxs, chosen_op]
-
-        # true_chosen_op_st = np.maximum(self.true_candidate_free_time[self.env_idxs, chosen_job],
-        #                                self.true_mch_free_time[self.env_idxs, chosen_mch])
-        # # self.true_op_st[self.env_idxs, chosen_op] = true_chosen_op_st
-
-        # self.true_op_ct[self.env_idxs, chosen_op] = true_chosen_op_st + self.true_op_pt[
-        #     self.env_idxs, chosen_op, chosen_mch]
-        # self.true_candidate_free_time[self.env_idxs, chosen_job] = self.true_op_ct[
-        #     self.env_idxs, chosen_op]
-        # self.true_mch_free_time[self.env_idxs, chosen_mch] = self.true_op_ct[
-        #     self.env_idxs, chosen_op]
-        
-
-        # self.current_makespan = np.maximum(self.current_makespan, self.true_op_ct[self.env_idxs, chosen_op])
-        # self.current_makespan = np.maximum(self.current_makespan, np.max(self.true_op_ct[self.env_idxs, chosen_op]))
-        # update the candidate message
-            
-        
-        # mask_temp = candidate_add_flag.any(axis=1)
-        # self.candidate_pt[mask_temp, chosen_job[candidate_add_flag]] = self.unmasked_op_pt[mask_temp, chosen_op[candidate_add_flag] + 1]
-        # # breakpoint()
-        # self.candidate_process_relation[mask_temp, chosen_job[candidate_add_flag]] = \
-        #     self.reverse_process_relation[mask_temp, chosen_op[candidate_add_flag] + 1]
-        # self.candidate_process_relation[~candidate_add_flag.all(axis=1), chosen_job[~candidate_add_flag]] = 1
-
-        # compute the next schedule time
-
-        # [E, J, M]
-        # candidateFT_for_compare = np.expand_dims(self.candidate_free_time, axis=2)
-        # mchFT_for_compare = np.expand_dims(self.mch_free_time, axis=1)
-        # self.pair_free_time = np.maximum(candidateFT_for_compare, mchFT_for_compare)
-
-        # schedule_matrix = ma.array(self.pair_free_time, mask=self.candidate_process_relation)
-
-        # self.next_schedule_time = np.min(
-        #     schedule_matrix.reshape(self.number_of_envs, -1), axis=1).data
-
-        # # breakpoint()
-        # self.remain_process_relation[self.env_idxs, chosen_op] = 0
-        # self.op_scheduled_flag[self.env_idxs, chosen_op] = 1
-
-        """
-            update the mask for deleting nodes
-        """
-        # self.deleted_op_nodes = \
-        #     np.logical_and((self.op_ct <= self.next_schedule_time[:, np.newaxis]),
-        #                    self.op_scheduled_flag)
-       
-        # Combine deleted nodes
-        # if dyn_ver != 0:
-        #     activate_future_op_node = np.minimum(chosen_op + self.activate_num_op, self.job_last_op_id[self.env_idxs, chosen_job])
-        #     # breakpoint()
-        #     invalid_job_mask = torch.tensor(self.candidate_process_relation).all(dim=2) #shape torch.Size([num_enviroments, num_jobs])
-        #     invalid_op_mask = torch.zeros((self.number_of_envs, self.number_of_ops), dtype=torch.bool)
-        #     invalid_op_mask |= torch.any(self.job_op_match_mask * invalid_job_mask.unsqueeze(-1), dim=1)
-        
-        #     np.put_along_axis(
-        #         self.deleted_future_op_nodes,
-        #         activate_future_op_node,
-        #         0,
-        #         axis=1
-        #     )
-        #     self.total_deleted_op_nodes = np.logical_or.reduce(np.stack([self.deleted_op_nodes, self.deleted_future_op_nodes, invalid_op_mask.cpu().numpy()]), axis=0)
-        #     self.delete_mask_fea_j = np.broadcast_to(
-        #         self.total_deleted_op_nodes[:, :, np.newaxis],
-        #         (self.total_deleted_op_nodes.shape[0], self.total_deleted_op_nodes.shape[1], self.op_fea_dim)
-        #     )
-
-        # if dyn_ver != 0:
-        #     for a in range(actions.size):
-        #         self.deleted_op_nodes = np.logical_and((self.op_ct <= self.next_schedule_time[:, np.newaxis]),self.op_scheduled_flag)
-
-        #         activate_future_op_node = np.minimum(chosen_op[0,a] + self.activate_num_op, self.job_last_op_id[self.env_idxs, chosen_job[0,a]])
-        #         # breakpoint()
-        #         invalid_job_mask = torch.tensor(self.candidate_process_relation).all(dim=2) #shape torch.Size([num_enviroments, num_jobs])
-        #         invalid_op_mask = torch.zeros((self.number_of_envs, self.number_of_ops), dtype=torch.bool)
-        #         invalid_op_mask |= torch.any(self.job_op_match_mask * invalid_job_mask.unsqueeze(-1), dim=1)
-            
-        #         np.put_along_axis(
-        #             self.deleted_future_op_nodes,
-        #             activate_future_op_node[:, np.newaxis],
-        #             0,
-        #             axis=1
-        #         )
-        #         self.total_deleted_op_nodes = np.logical_or.reduce(np.stack([self.deleted_op_nodes, self.deleted_future_op_nodes, invalid_op_mask.cpu().numpy()]), axis=0)
-        #         self.delete_mask_fea_j = np.broadcast_to(
-        #             self.total_deleted_op_nodes[:, :, np.newaxis],
-        #             (self.total_deleted_op_nodes.shape[0], self.total_deleted_op_nodes.shape[1], self.op_fea_dim)
-        #         )
-        # else:
-        #     self.delete_mask_fea_j = np.tile(self.deleted_op_nodes[:, :, np.newaxis],
-        #                                 (1, 1, self.op_fea_dim))
-        
-        
-
-        """
-            update the state
-        """
-        # pruned_op_mask = self.update_op_mask(dyn_ver)
-
-        # update operation raw features
-        # for a in range(actions.size):
-        #     pruned_op_mask = self.update_op_mask(dyn_ver)
-        #     op = np.array([chosen_op[0,a]])
-        #     job = np.array([chosen_job[0,a]])
-        #     diff = self.op_ct[self.env_idxs, op] - self.op_ct_lb[self.env_idxs, op]
-
-        #     mask1 = (self.op_idx >= op[:, np.newaxis]) & \
-        #             (self.op_idx < (self.job_last_op_id[self.env_idxs, job] + 1)[:,
-        #                         np.newaxis])
-        #     self.op_ct_lb[mask1] += np.tile(diff[:, np.newaxis], (1, self.number_of_ops))[mask1]
-
-        #     mask2 = (self.op_idx >= (self.job_first_op_id[self.env_idxs, job])[:,
-        #                             np.newaxis]) & \
-        #             (self.op_idx < (self.job_last_op_id[self.env_idxs, job] + 1)[:,
-        #                         np.newaxis])
-        #     self.op_match_job_left_op_nums[mask2] -= 1
-        #     self.op_match_job_remain_work[mask2] -= \
-        #         np.tile(self.op_mean_pt[self.env_idxs, op][:, np.newaxis], (1, self.number_of_ops))[mask2]
-            
-        #     self.op_waiting_time = np.zeros((self.number_of_envs, self.number_of_ops))
-        #     self.op_waiting_time[self.env_job_idx, self.candidate] = \
-        #         (1 - self.mask) * np.maximum(np.expand_dims(self.next_schedule_time, axis=1)
-        #                                     - self.candidate_free_time, 0) + self.mask * self.op_waiting_time[
-        #             self.env_job_idx, self.candidate]
-
-        #     self.op_remain_work = np.maximum(self.op_ct -
-        #                                     np.expand_dims(self.next_schedule_time, axis=1), 0)
-            
-        #     # breakpoint()
-        #     self.construct_op_features()
-
-        #     # update dynamic pair mask
-        #     self.dynamic_pair_mask = np.copy(self.candidate_process_relation)
-
-        #     self.unavailable_pairs = self.pair_free_time > self.next_schedule_time[:, np.newaxis, np.newaxis]
-
-        #     self.dynamic_pair_mask = np.logical_or(self.dynamic_pair_mask, self.unavailable_pairs)
-
-        #     # update comp_idx
-        #     self.comp_idx = self.logic_operator(x=~self.dynamic_pair_mask)
-
-        #     self.update_mch_mask()
-
-        #     # update machine raw features
-        #     self.mch_current_available_jc_nums = np.sum(~self.dynamic_pair_mask, axis=1)
-        #     self.mch_current_available_op_nums -= self.process_relation[
-        #         self.env_idxs, chosen_op].sum(axis=1)
-
-        #     mch_free_duration = np.expand_dims(self.next_schedule_time, axis=1) - self.mch_free_time
-        #     mch_free_flag = mch_free_duration < 0
-        #     self.mch_working_flag = mch_free_flag + 0
-        #     self.mch_waiting_time = (1 - mch_free_flag) * mch_free_duration
-
-        #     self.mch_remain_work = np.maximum(-mch_free_duration, 0)
-
-        #     mch_delete_mask =  np.copy(self.delete_mask_fea_m)
-        #     if dyn_ver == 14 or dyn_ver == 15:
-        #         invalid_mch_mask = torch.tensor(self.candidate_process_relation).all(dim=1) #shape torch.Size([num_enviroments, num_machine])
-        #         mch_delete_mask[mch_free_flag] = 1
-
-        #     self.construct_mch_features(mch_delete_mask)
-
-        #     self.construct_pair_features()
-
-        #     if dyn_ver == 10 or dyn_ver == 12:
-        #         fea_pairs = self.fea_pairs.copy()
-        #         fea_pairs[invalid_job_mask.cpu(), :] = 0
-        #     else:
-        #         fea_pairs = self.fea_pairs
-                
-
-        #     # compute the reward : R_t = C_{LB}(s_{t}) - C_{LB}(s_{t+1})
-        #     reward = self.max_endTime - np.max(self.op_ct_lb, axis=1)
-        #     self.max_endTime = np.max(self.op_ct_lb, axis=1)
-            
-        # diff = self.op_ct[self.env_idxs, chosen_op] - self.op_ct_lb[self.env_idxs, chosen_op]
-
-        # # mask1 = (self.op_idx >= chosen_op[:, np.newaxis]) & \
-        # #         (self.op_idx < (self.job_last_op_id[self.env_idxs, chosen_job] + 1)[:,
-        # #                        np.newaxis])
-        # mask1 = (self.op_idx >= chosen_op[:,:,None]) & (self.op_idx < (self.job_last_op_id[self.env_idxs, chosen_job] + 1)[:,:, None])
-        # # self.op_ct_lb[mask1] += np.tile(diff[:, np.newaxis], (1, self.number_of_ops))[mask1]
-        # self.op_ct_lb[self.env_idxs] += (diff[:, :, None]* mask1).sum(axis=1)
-
-        # # mask2 = (self.op_idx >= (self.job_first_op_id[self.env_idxs, chosen_job])[:,
-        # #                         np.newaxis]) & \
-        # #         (self.op_idx < (self.true_job_last_op_id[self.env_idxs, chosen_job] + 1)[:,
-        # #                        np.newaxis])
-        # mask2 = (self.op_idx[None, :] >= self.job_first_op_id[self.env_idxs, chosen_job][:, :, None]) & (self.op_idx[None, :] < self.job_last_op_id[self.env_idxs, chosen_job][:, :, None])
-        # self.op_match_job_left_op_nums[self.env_idxs] -= mask2.sum(axis=1).astype(int)
-        # # self.op_match_job_left_op_nums[mask2] -= 1
-        # self.op_match_job_remain_work[self.env_idxs] -= (self.op_mean_pt[self.env_idxs, chosen_op][:,:,None] * mask2).sum(axis=1)
-        # # self.op_match_job_remain_work[mask2] -= \
-        # #     np.tile(self.op_mean_pt[self.env_idxs, chosen_op][:, np.newaxis], (1, self.number_of_ops))[mask2]
-
-        # self.op_waiting_time = np.zeros((self.number_of_envs, self.number_of_ops))
-        # self.op_waiting_time[self.env_job_idx, self.candidate] = \
-        #     (1 - self.mask) * np.maximum(np.expand_dims(self.next_schedule_time, axis=1)
-        #                                  - self.candidate_free_time, 0) + self.mask * self.op_waiting_time[
-        #         self.env_job_idx, self.candidate]
-
-        # self.op_remain_work = np.maximum(self.op_ct -
-        #                                  np.expand_dims(self.next_schedule_time, axis=1), 0)
-        
-        # # breakpoint()
-        # self.construct_op_features()
-
-        # # update dynamic pair mask
-        # self.dynamic_pair_mask = np.copy(self.candidate_process_relation)
-
-        # self.unavailable_pairs = self.pair_free_time > self.next_schedule_time[:, np.newaxis, np.newaxis]
-
-        # self.dynamic_pair_mask = np.logical_or(self.dynamic_pair_mask, self.unavailable_pairs)
-
-        # # update comp_idx
-        # self.comp_idx = self.logic_operator(x=~self.dynamic_pair_mask)
-
-        # self.update_mch_mask()
-
-        # # update machine raw features
-        # self.mch_current_available_jc_nums = np.sum(~self.dynamic_pair_mask, axis=1)
-        # self.mch_current_available_op_nums -= self.process_relation[
-        #     self.env_idxs, chosen_op].sum(axis=1)
-
-        # mch_free_duration = np.expand_dims(self.next_schedule_time, axis=1) - self.mch_free_time
-        # mch_free_flag = mch_free_duration < 0
-        # self.mch_working_flag = mch_free_flag + 0
-        # self.mch_waiting_time = (1 - mch_free_flag) * mch_free_duration
-
-        # self.mch_remain_work = np.maximum(-mch_free_duration, 0)
-
-        # mch_delete_mask =  np.copy(self.delete_mask_fea_m)
-        # if dyn_ver == 14 or dyn_ver == 15:
-        #     invalid_mch_mask = torch.tensor(self.candidate_process_relation).all(dim=1) #shape torch.Size([num_enviroments, num_machine])
-        #     mch_delete_mask[mch_free_flag] = 1
-
-        # self.construct_mch_features(mch_delete_mask)
-
-        # self.construct_pair_features()
-
-        # if dyn_ver == 10 or dyn_ver == 12:
-        #     fea_pairs = self.fea_pairs.copy()
-        #     fea_pairs[invalid_job_mask.cpu(), :] = 0
-        # else:
-        #     fea_pairs = self.fea_pairs
-            
-
-        # # compute the reward : R_t = C_{LB}(s_{t}) - C_{LB}(s_{t+1})
-        # reward = self.max_endTime - np.max(self.op_ct_lb, axis=1)
-        # self.max_endTime = np.max(self.op_ct_lb, axis=1)
-
-        # update the state
-        # self.state.update(self.fea_j, pruned_op_mask, self.fea_m, self.mch_mask,
-        #                   self.dynamic_pair_mask, self.comp_idx, self.candidate,
-        #                   fea_pairs)
 
         return self.state, np.array(reward), self.done()
 
@@ -1291,11 +952,6 @@ class FJSPEnvForDynGraphBA:
         num_delete_nodes = np.count_nonzero(self.total_deleted_op_nodes, axis=1)
         num_left_nodes = self.number_of_ops - num_delete_nodes[:, np.newaxis]
         
-        # mean_fea_j = np.sum(self.fea_j, axis=1, where=~self.total_deleted_op_nodes[:, :, np.newaxis]) / num_left_nodes
-        # var_fea_j = np.var(self.fea_j, axis=1, where=~self.total_deleted_op_nodes[:, :, np.newaxis])
-        # std_fea_j = np.sqrt(var_fea_j * self.number_of_ops / num_left_nodes)
-        # self.fea_j = np.where( ~self.delete_mask_fea_j,  (self.fea_j - mean_fea_j[:, np.newaxis, :]) / (std_fea_j[:, np.newaxis, :] + 1e-8), 0)
-
         mean_fea_j = np.sum(self.fea_j, axis=1) / num_left_nodes
         temp = np.where(self.delete_mask_fea_j, mean_fea_j[:, np.newaxis, :], self.fea_j)
         var_fea_j = np.var(temp, axis=1)
