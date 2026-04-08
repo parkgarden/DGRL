@@ -41,7 +41,7 @@ Training data is generated on-the-fly from `./data/data_train_vali/<data_source>
 ## Testing
 
 ```bash
-python test_trained_model_DGRL.py --data_source 10020 --dyn 1 --graph_len 5 --action_threshold 5 --test_model 10x5+mix+dyn1
+python test_DGRL_W.py --data_source 10020 --dyn 1 --graph_len 5 --action_threshold 5 --test_model 10x5+mix+dyn1
 ```
 
 | Argument | Description | Default |
