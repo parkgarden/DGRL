@@ -42,7 +42,7 @@ Training data is generated on-the-fly. Validation runs every 1000 episodes again
 ## Testing
 
 ```bash
-python test_DGRL.py --data_source Brandimarte_Data --dyn 1 --graph_len 5 --mode 1 --alpha 5
+python test_DGRL_H.py --data_source Brandimarte_Data --dyn 1 --graph_len 5 --mode 1 --alpha 5
 ```
 
 | Argument | Description | Default |
