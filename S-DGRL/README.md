@@ -35,7 +35,7 @@ Best checkpoint is saved under `./save/train_<timestamp>/`. Copy it to `./model/
 ## Testing
 
 ```bash
-python test_DGRL.py --data_source 10020 --ins_start 0 --ins_end 10 --ma 1 --alpha 5
+python test_DGRL_S.py --data_source 10020 --ins_start 0 --ins_end 10 --ma 1 --alpha 5
 ```
 
 | Argument | Description | Default |
