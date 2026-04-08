@@ -21,8 +21,8 @@ Test datasets are provided in the `./data/` directory as zip archives. Extract t
 
 | Archive | Description |
 |---|---|
-| `10020.zip` – `200100.zip` | Random FJSP instances (jobs × machines) |
-| `Brandimarte_Data.zip` | Brandimarte benchmark instances |
-| `vdata.zip` | Validation data |
+| `10020.zip` – `200100.zip` | FJSP instances (jobs × machines) |
+| `Brandimarte_Data.zip` | Brandimarte mk benchmark instances |
+| `vdata.zip` | Hurink's vdata benchmark instances |
 
 Refer to the README of each variant for the exact data path expected.
